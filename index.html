@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Death Click Game</title>
+</head>
+<body>
+    <div class="outer-container">
+        <div class="left-column">
+            <!-- Player Info Container -->
+            <div class="player-info-container">
+                <div class="player-info-wrapper">
+                    <h2 id="player-name">Player</h2>
+                    <p>Level: <span id="level-display">1</span></p>
+                    <p>Health: <span id="health-display">100</span></p>
+                    <p>Max Health: <span id="max-health-display">100</span></p>
+                    <p>Defense: <span id="defense-display">3</span></p>
+                    <p>Strength: <span id="strength-display">8</span></p>
+                    <!-- Add more stats as needed -->
+                    <div class="bar-container">
+                        <div class="health-bar" id="player-health-bar"></div>
+                        <div class="experience-bar" id="player-experience-bar"></div>
+                    </div>
+                    <p>Coins: <span id="coin-display">0</span></p>
+                </div>
+            </div>
+
+            <!-- Player Inventory Container -->
+            <div class="player-inventory-container">
+                <h2>Inventory</h2>
+                <!-- Add inventory items here -->
+            </div>
+        </div>
+
+        <div class="center-column">
+            <div class="game-container">
+                <div id="monster-container">
+                    <div class="bar-container">
+                        <div class="health-bar" id="monster-health-bar"></div>
+                    </div>
+                    <h2 id="monster-name">Monster</h2>
+                    <img src="monster1.png" alt="Monster Image" id="monster-image">
+                    <div class="monster-info"></div>
+                </div>
+
+                <div id="player-container">
+                    <button id="attack-button">Attack</button>
+                    <!-- Updated damage display containers -->
+                    <div id="damage-display-container">
+                        <div id="player-damage-display">Player dealt 0 damage!</div>
+                        <div id="enemy-damage-display">Enemy counterattacks and deals 0 damage!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <!-- Store Container -->
+            <div class="store-container">
+                <h2>Store</h2>
+                <!-- Add store items here -->
+            </div>
+
+            <!-- Achievements Container -->
+            <div class="achievements-container">
+                <h2>Achievements</h2>
+                <ul id="achievements-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
