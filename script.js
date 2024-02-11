@@ -11,7 +11,7 @@ const monsters = [
         evasion: 0.1,
         criticalHitChance: 0.1,
         criticalHitDamageMultiplier: 2,
-        lifesteal: 0.1,
+        lifesteal: 0.0,
         monsterArmor: 1,
         statusEffects: [],
         image: "monster1.png",
@@ -27,10 +27,58 @@ const monsters = [
         evasion: 0.2,
         criticalHitChance: 0.15,
         criticalHitDamageMultiplier: 1.5,
-        lifesteal: 0.05,
+        lifesteal: 0.00,
         monsterArmor: 2,
         statusEffects: [],
         image: "monster2.png",
+    },
+    {
+        name: "Monster3",
+        health: 120,
+        maxHealth: 120,
+        defense: 2,
+        criticalStrike: 0.15,
+        strength: 2,
+        accuracy: 0.7,
+        evasion: 0.2,
+        criticalHitChance: 0.15,
+        criticalHitDamageMultiplier: 1.5,
+        lifesteal: 0.00,
+        monsterArmor: 2,
+        statusEffects: [],
+        image: "monster3.png",
+    },
+    {
+        name: "Monster4",
+        health: 75,
+        maxHealth: 75,
+        defense: 4,
+        criticalStrike: 0.20,
+        strength: 4,
+        accuracy: 0.7,
+        evasion: 0.2,
+        criticalHitChance: 0.15,
+        criticalHitDamageMultiplier: 1.5,
+        lifesteal: 0.00,
+        monsterArmor: 2,
+        statusEffects: [],
+        image: "monster4.png",
+    },
+    {
+        name: "Monster5",
+        health: 75,
+        maxHealth: 75,
+        defense: 4,
+        criticalStrike: 0.20,
+        strength: 4,
+        accuracy: 0.7,
+        evasion: 0.2,
+        criticalHitChance: 0.15,
+        criticalHitDamageMultiplier: 1.5,
+        lifesteal: 0.00,
+        monsterArmor: 2,
+        statusEffects: [],
+        image: "monster5.png",
     },
     // Add more monsters as needed
 ];
@@ -67,6 +115,7 @@ let basePlayerDamage = 5;
 let minHealthIncrease = 1;
 let maxHealthIncrease = 10;
 let currentMonsterIndex;
+let monsterCycleIndex = 0;
 
 // New variables for achievements
 let monstersKilled = 0;
@@ -127,7 +176,16 @@ function setPlayerName() {
 }
 
 function updateMonsterName() {
-    monsterName.textContent = monsters[currentMonsterIndex].name;
+    const monsterContainer = document.getElementById('monster-container');
+    const monsterNameElement = document.getElementById('monster-name');
+
+    if (currentMonsterIndex !== undefined && monsters[currentMonsterIndex]) {
+        monsterNameElement.textContent = monsters[currentMonsterIndex].name;
+        monsterContainer.style.display = 'block'; // Show the monster container if a monster is present
+    } else {
+        monsterNameElement.textContent = ''; // Clear the name if there's no monster
+        monsterContainer.style.display = 'none'; // Hide the monster container if there's no monster
+    }
 }
 
 function resetGame() {
@@ -164,6 +222,11 @@ function resetGame() {
         achievement.unlocked = false;
     });
 
+    // Check if currentMonsterIndex is defined before accessing the image property
+    if (currentMonsterIndex !== undefined && monsters[currentMonsterIndex]) {
+        monsters[currentMonsterIndex].image = monsters[currentMonsterIndex].image;
+    }
+
     updateUI();
     updateAchievements();
 
@@ -195,6 +258,18 @@ function spawnMonster() {
 
     updateMonsterName();
     updateMonsterHealthBar();
+
+    // Update the monster image
+    monsterImage.src = monster.image;
+}
+
+function updateMonsterImage() {
+    const monsterImageElement = document.getElementById('monster-image');
+    
+    if (currentMonsterIndex !== undefined && monsters[currentMonsterIndex] && 'image' in monsters[currentMonsterIndex]) {
+        monsterImageElement.src = monsters[currentMonsterIndex].image;
+        monsterImageElement.alt = `Monster Image: ${monsters[currentMonsterIndex].name}`;
+    }
 }
 
 // Add a function to calculate the monster level
@@ -336,6 +411,8 @@ function handleVictory() {
 
     updateUI();
     updateMonsterName();
+	updateMonsterImage();
+	monsterCycleIndex++;
     spawnMonster();
 }
 
@@ -407,10 +484,18 @@ function updateUI() {
     // ... other updates as needed
 }
 
-
 function updateMonsterHealthBar() {
-    const monsterHealthPercentage = (monsters[currentMonsterIndex].health / monsters[currentMonsterIndex].maxHealth) * 100;
-    monsterHealthBar.style.width = `${monsterHealthPercentage}%`;
+    const monsterHealthBar = document.getElementById('monster-health-bar');
+
+    if (currentMonsterIndex !== undefined && monsters[currentMonsterIndex] && 'health' in monsters[currentMonsterIndex]) {
+        const monsterHealthPercentage = (monsters[currentMonsterIndex].health / monsters[currentMonsterIndex].maxHealth) * 100;
+        monsterHealthBar.style.width = `${monsterHealthPercentage}%`;
+    } else {
+        // Reset the health bar if there's no valid monster and update monster image
+        monsterHealthBar.style.width = '0%';
+		updateMonsterImage();
+		
+    }
 }
 
 function updateAchievements() {
