@@ -249,19 +249,17 @@ function spawnMonster() {
 
     const playerLevelStats = baseStats[playerLevel];
 
-    monster.maxHealth = Math.floor(playerLevelStats.maxHealth * (1 + playerLevel * 0.1));
-    monster.defense = Math.floor(playerLevelStats.defense * (1 + playerLevel * 0.1));
-    monster.strength = Math.floor(playerLevelStats.strength * (1 + playerLevel * 0.1));
+    monster.maxHealth = Math.floor(playerLevelStats.maxHealth * (1 + monster.level * 0.2));
+    monster.defense = Math.floor(playerLevelStats.defense * (1 + monster.level * 0.15));
+    monster.strength = Math.floor(playerLevelStats.strength * (1 + monster.level * 0.1));
 
     monster.maxHealth = Math.max(5, Math.min(monster.maxHealth, 15));
     monster.health = monster.maxHealth;
 
     updateMonsterName();
     updateMonsterHealthBar();
-
-    // Update the monster image
-    monsterImage.src = monster.image;
 }
+
 
 function updateMonsterImage() {
     const monsterImageElement = document.getElementById('monster-image');
@@ -294,18 +292,18 @@ function handleAttack() {
         playerDamageDisplay.textContent = '';
         enemyDamageDisplay.textContent = '';
 
-        const playerDamage = calculateDamage(playerStats, true);
+        const playerDamage = calculateDamage(playerStats, monsters[currentMonsterIndex]);
         monsters[currentMonsterIndex].health -= playerDamage;
 
-        playerDamageDisplay.textContent = `You dealt ${playerDamage.toFixed(0)} damage to ${monsters[currentMonsterIndex].name}!`;
+        playerDamageDisplay.textContent = `You dealt ${playerDamage} damage to ${monsters[currentMonsterIndex].name}!`;
 
         if (monsters[currentMonsterIndex].health <= 0) {
             handleVictory();
         } else {
-            const monsterDamage = calculateDamage(monsters[currentMonsterIndex], false);
+            const monsterDamage = calculateDamage(monsters[currentMonsterIndex], playerStats);
             playerStats.health -= monsterDamage;
 
-            enemyDamageDisplay.textContent = `${monsters[currentMonsterIndex].name} counterattacks and deals ${monsterDamage.toFixed(0)} damage!`;
+            enemyDamageDisplay.textContent = `${monsters[currentMonsterIndex].name} counterattacks and deals ${monsterDamage} damage!`;
 
             if (playerStats.health <= 0) {
                 handleDefeat();
@@ -316,9 +314,9 @@ function handleAttack() {
     }
 }
 
-function calculateDamage(character, isPlayer) {
-    const baseDamage = isPlayer ? basePlayerDamage : 10;
-    const criticalHitChance = character.criticalStrike;
+function calculateDamage(attacker, defender) {
+    const baseDamage = attacker.baseDamage || 5; // You can adjust the base damage value
+    const criticalHitChance = attacker.criticalStrike || 0.1;
     const isCriticalHit = Math.random() < criticalHitChance;
 
     const strengthScale = 0.2;
@@ -327,16 +325,34 @@ function calculateDamage(character, isPlayer) {
 
     let damage = isCriticalHit ? baseDamage * criticalScale : baseDamage;
 
-    damage += character.strength * strengthScale;
+    // Introduce random variation
+    const randomVariation = Math.random() * 1.0 - 0.1; // Adjust the range as needed
+    damage += damage * randomVariation;
 
-    if (!isPlayer) {
-        damage -= playerStats.defense * defenseScale;
+    damage += attacker.strength * strengthScale;
+
+    if (defender && !defender.isPlayer) {
+        damage -= defender.defense * defenseScale;
     }
 
     damage = Math.max(1, damage);
 
-    return damage;
+    return Math.floor(damage);
 }
+
+
+function handleCriticalHit(character, isPlayer) {
+    const criticalHitChance = character.criticalHitChance || 0.1;
+    const isCriticalHit = Math.random() < criticalHitChance;
+
+    if (isCriticalHit) {
+        const criticalMessage = isPlayer ? 'Critical Hit!' : 'Enemy lands a Critical Hit!';
+        playerDamageDisplay.textContent += ` ${criticalMessage}`;
+    }
+
+    return isCriticalHit ? character.criticalHitDamageMultiplier || 2 : 1;
+}
+
 
 function calculateNextLevelExperience(level) {
     return Math.floor(50 * Math.pow(1.2, level - 1));
