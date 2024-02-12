@@ -130,6 +130,28 @@ body {
     color: #ff0000;
 }
 
+/* Add this to your existing CSS */
+.inventory-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px; /* Adjust the margin to your preference */
+}
+
+.item-quantity {
+    margin-left: 10px; /* Adjust the margin to your preference */
+}
+
+button {
+    z-index: 1;
+    visibility: visible;
+}
+
+/* You may also want to add some padding to the inventory container */
+.player-inventory-container {
+    padding: 10px; /* Adjust the padding to your preference */
+}
+
+
 #coins-display {
     /* Keep the existing styling for coins display */
 }

@@ -15,6 +15,11 @@ const monsters = [
         monsterArmor: 1,
         statusEffects: [],
         image: "monster1.png",
+		drops: [
+            { name: "Health Potion", type: "consumable", effect: { health: 20 } },
+            // Add more items as needed
+        ],
+        dropRate: 0.3, // Probability of getting drops (0.0 to 1.0)
     },
     {
         name: "Monster2",
@@ -31,6 +36,11 @@ const monsters = [
         monsterArmor: 2,
         statusEffects: [],
         image: "monster2.png",
+		drops: [
+            { name: "Health Potion", type: "consumable", effect: { health: 20 } },
+            // Add more items as needed
+        ],
+        dropRate: 0.3, // Probability of getting drops (0.0 to 1.0)
     },
     {
         name: "Monster3",
@@ -47,6 +57,11 @@ const monsters = [
         monsterArmor: 2,
         statusEffects: [],
         image: "monster3.png",
+		drops: [
+            { name: "Health Potion", type: "consumable", effect: { health: 20 } },
+            // Add more items as needed
+        ],
+        dropRate: 0.3, // Probability of getting drops (0.0 to 1.0)
     },
     {
         name: "Monster4",
@@ -63,6 +78,11 @@ const monsters = [
         monsterArmor: 2,
         statusEffects: [],
         image: "monster4.png",
+		drops: [
+            { name: "Health Potion", type: "consumable", effect: { health: 20 } },
+            // Add more items as needed
+        ],
+        dropRate: 0.3, // Probability of getting drops (0.0 to 1.0)
     },
     {
         name: "Monster5",
@@ -79,6 +99,11 @@ const monsters = [
         monsterArmor: 2,
         statusEffects: [],
         image: "monster5.png",
+		drops: [
+            { name: "Health Potion", type: "consumable", effect: { health: 20 } },
+            // Add more items as needed
+        ],
+        dropRate: 0.3, // Probability of getting drops (0.0 to 1.0)
     },
     // Add more monsters as needed
 ];
@@ -116,6 +141,8 @@ let minHealthIncrease = 1;
 let maxHealthIncrease = 10;
 let currentMonsterIndex;
 let monsterCycleIndex = 0;
+let playerInventory = []; // Initialize an empty array to store items
+
 
 // New variables for achievements
 let monstersKilled = 0;
@@ -153,6 +180,20 @@ attackButton.addEventListener('click', () => {
 });
 
 resetGame();
+
+// Event listener for the "Attack" button
+attackButton.addEventListener('click', () => {
+    handleAttack();
+});
+
+// Event listener for using a Health Potion
+const useHealthPotionButton = document.getElementById('useHealthPotionButton');
+if (useHealthPotionButton) {
+    useHealthPotionButton.addEventListener('click', () => {
+        useItem('Health Potion');
+    });
+}
+
 
 function openModal() {
     const modal = document.getElementById('nameModal');
@@ -391,6 +432,16 @@ function calculatePlayerNextLevelStats() {
     updateUI();
 }
 
+function applyConsumableEffect(effect) {
+    // Update player stats based on the consumable effect
+    if (effect.health) {
+        playerStats.health = Math.min(playerStats.maxHealth, playerStats.health + effect.health);
+    }
+
+    // Add more effects as needed
+    updateUI();
+}
+
 function handleVictory() {
     playerDamageDisplay.textContent = `You defeated ${monsters[currentMonsterIndex].name} and gained ${Math.floor(monsters[currentMonsterIndex].health)} coins and experience!`;
 
@@ -410,6 +461,50 @@ function handleVictory() {
         experienceBar.style.width = `${experiencePercentage}%`;
     }
 
+    // Handle item drops
+    if (currentMonsterIndex !== undefined) {
+        const monster = monsters[currentMonsterIndex];
+        const dropRoll = Math.random();
+
+        if (dropRoll < monster.dropRate) {
+            const randomDropIndex = Math.floor(Math.random() * monster.drops.length);
+            const droppedItem = monster.drops[randomDropIndex];
+
+            // Log information about the dropped item
+            console.log(`Dropped Item: ${droppedItem.name}, Type: ${droppedItem.type}, Effect: ${JSON.stringify(droppedItem.effect)}`);
+
+            // Check if an <li> element with the same name already exists
+            const existingItemElement = findItemElementByName(droppedItem.name);
+
+            if (existingItemElement) {
+                // Update the quantity if the item already exists
+                updateItemQuantity(existingItemElement);
+            } else {
+                // Create a new <li> element for the dropped item
+                const newItemElement = createNewItemElement(droppedItem);
+
+                // Append the new <li> element to the inventory list
+                const inventoryList = document.getElementById('inventory-list');
+                inventoryList.appendChild(newItemElement);
+            }
+
+			if (droppedItem.type === "consumable") {
+			  // Add the item to the player's inventory
+			  playerInventory.push(droppedItem);
+			  playerDamageDisplay.textContent += ` You received a ${droppedItem.name}!`;
+			} else {
+
+            // Handle the dropped item based on its type and effect
+            if (droppedItem.type === "consumable") {
+                // For now, let's assume consumables affect the player immediately
+                applyConsumableEffect(droppedItem.effect);
+            }
+
+            playerDamageDisplay.textContent += ` You received a ${droppedItem.name}!`;
+        }
+    }
+}
+
     monstersKilled++;
     goldCollected += Math.abs(monsters[currentMonsterIndex].health);
 
@@ -427,9 +522,102 @@ function handleVictory() {
 
     updateUI();
     updateMonsterName();
-	updateMonsterImage();
-	monsterCycleIndex++;
+    updateMonsterImage();
+    monsterCycleIndex++;
     spawnMonster();
+}
+
+function findItemElementByName(itemName) {
+    // Helper function to find an <li> element with the specified item name
+    const inventoryList = document.getElementById('inventory-list');
+    const itemElements = inventoryList.getElementsByTagName('li');
+
+    for (const itemElement of itemElements) {
+        if (itemElement.textContent.includes(itemName)) {
+            return itemElement;
+        }
+    }
+
+    return null;
+}
+
+function updateItemQuantity(itemElement) {
+    // Helper function to update the quantity of an existing item in the inventory
+    const quantityElement = itemElement.querySelector('.item-quantity');
+    if (quantityElement) {
+        const currentQuantity = parseInt(quantityElement.textContent, 10) || 1;
+        quantityElement.textContent = currentQuantity + 1;
+    }
+}
+
+function createNewItemElement(item) {
+    const newItemElement = document.createElement('li');
+    newItemElement.classList.add('inventory-item');
+    newItemElement.setAttribute('data-item-name', item.name);
+
+    const quantityElement = document.createElement('span');
+    quantityElement.classList.add('item-quantity');
+    quantityElement.textContent = ` x${item.quantity || 1}`;
+
+    // Create a button for using the item
+    const useButton = document.createElement('button');
+    useButton.textContent = 'Use';
+    useButton.setAttribute('data-item-name', item.name); // Unique identifier for each button
+    useButton.addEventListener('click', () => useItem(item.name));
+
+    newItemElement.textContent = `${item.name}`;
+    newItemElement.appendChild(useButton);
+    newItemElement.appendChild(quantityElement);
+
+    newItemElement.style.listStyleType = 'none';
+
+    return newItemElement;
+}
+
+function useItem(itemName) {
+  const itemIndex = playerInventory.findIndex(item => item.name === itemName);
+
+  if (itemIndex !== -1) {
+    const item = playerInventory.splice(itemIndex, 1)[0]; // Remove item immediately
+
+    switch (item.name) {
+      case 'Health Potion':
+        // Restore 20 health
+        playerStats.health = Math.min(playerStats.health + 20, playerStats.maxHealth);
+        break;
+      // Add cases for other item types as needed
+    }
+
+    updateUI();
+	updateInventory();
+	
+  } else {
+    // Handle case where item is not found in inventory
+    console.error(`Item "${itemName}" not found in inventory.`);
+  }
+}
+
+function findItemInInventory(itemName) {
+    return playerInventory.find(item => item.name === itemName);
+}
+
+function removeItemFromInventory(itemName) {
+    const index = playerInventory.findIndex(item => item.name === itemName);
+    if (index !== -1) {
+        playerInventory.splice(index, 1);
+    }
+    updateInventory();
+}
+
+function updateInventory() {
+    // Update the inventory display after making changes
+    const inventoryList = document.querySelector('.player-inventory-container');
+    inventoryList.innerHTML = ''; // Clear existing items
+
+    playerInventory.forEach(item => {
+        const newItemElement = createNewItemElement(item);
+        inventoryList.appendChild(newItemElement);
+    });
 }
 
 // New function to calculate experience gained based on defeated monster's level
@@ -497,6 +685,8 @@ function updateUI() {
         updateMonsterHealthBar();
     }
 
+	console.log('Player Health:', playerStats.health);
+    console.log('Player Inventory:', playerInventory);
     // ... other updates as needed
 }
 
