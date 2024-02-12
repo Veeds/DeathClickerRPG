@@ -578,7 +578,7 @@ function useItem(itemName) {
   const itemIndex = playerInventory.findIndex(item => item.name === itemName);
 
   if (itemIndex !== -1) {
-    const item = playerInventory.splice(itemIndex, 1)[0]; // Remove item immediately
+    const item = playerInventory[itemIndex];
 
     switch (item.name) {
       case 'Health Potion':
@@ -588,9 +588,17 @@ function useItem(itemName) {
       // Add cases for other item types as needed
     }
 
+    // Decrease item quantity only
+    item.quantity--;
+
+    // If the item is depleted, remove it from the inventory
+    if (item.quantity === 0) {
+      playerInventory.splice(itemIndex, 1);
+    }
+
     updateUI();
-	updateInventory();
-	
+    updateItemElement(findItemElementByName(item.name), item); // Assuming you have a findItemElementByName function
+    updateInventory();
   } else {
     // Handle case where item is not found in inventory
     console.error(`Item "${itemName}" not found in inventory.`);
@@ -610,16 +618,41 @@ function removeItemFromInventory(itemName) {
 }
 
 function updateInventory() {
-    // Update the inventory display after making changes
-    const inventoryList = document.querySelector('.player-inventory-container');
-    inventoryList.innerHTML = ''; // Clear existing items
+  // Get existing item elements
+  const existingItemElements = document.querySelectorAll('.player-inventory-container .item');
 
-    playerInventory.forEach(item => {
-        const newItemElement = createNewItemElement(item);
-        inventoryList.appendChild(newItemElement);
-    });
+  // Update existing items or create new ones
+  playerInventory.forEach(item => {
+    const existingItemElement = existingItemElements.find(el => el.dataset.itemName === item.name);
+
+    if (existingItemElement) {
+      // Update existing item element
+      updateItemElement(existingItemElement, item); // Assuming this function updates the item quantity
+    } else {
+      // Create new item element
+      const newItemElement = createNewItemElement(item);
+      inventoryList.appendChild(newItemElement);
+    }
+  });
+
+  // Remove extra item elements that are no longer in inventory
+  existingItemElements.forEach(itemElement => {
+    if (!playerInventory.find(item => item.name === itemElement.dataset.itemName)) {
+      itemElement.remove();
+    }
+  });
 }
 
+function updateItemElement(itemElement, item) {
+  // Assuming the itemElement structure includes a span with class 'item-quantity'
+  const quantityElement = itemElement.querySelector('.item-quantity');
+
+  if (quantityElement) {
+    // Update the quantity text
+    quantityElement.textContent = ` x${item.quantity || 1}`;
+  }
+  // Add any other updating logic as needed
+}
 // New function to calculate experience gained based on defeated monster's level
 function calculateExperienceGain(monsterLevel) {
     const baseExperience = 20; // You can adjust this value based on your game's balance
