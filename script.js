@@ -194,7 +194,6 @@ if (useHealthPotionButton) {
     });
 }
 
-
 function openModal() {
     const modal = document.getElementById('nameModal');
     modal.style.display = 'block';
@@ -301,7 +300,6 @@ function spawnMonster() {
     updateMonsterHealthBar();
 }
 
-
 function updateMonsterImage() {
     const monsterImageElement = document.getElementById('monster-image');
     
@@ -381,7 +379,6 @@ function calculateDamage(attacker, defender) {
     return Math.floor(damage);
 }
 
-
 function handleCriticalHit(character, isPlayer) {
     const criticalHitChance = character.criticalHitChance || 0.1;
     const isCriticalHit = Math.random() < criticalHitChance;
@@ -393,7 +390,6 @@ function handleCriticalHit(character, isPlayer) {
 
     return isCriticalHit ? character.criticalHitDamageMultiplier || 2 : 1;
 }
-
 
 function calculateNextLevelExperience(level) {
     return Math.floor(50 * Math.pow(1.2, level - 1));
@@ -599,6 +595,7 @@ function useItem(itemName) {
     updateUI();
     updateItemElement(findItemElementByName(item.name), item); // Assuming you have a findItemElementByName function
     updateInventory();
+	
   } else {
     // Handle case where item is not found in inventory
     console.error(`Item "${itemName}" not found in inventory.`);
@@ -617,30 +614,44 @@ function removeItemFromInventory(itemName) {
     updateInventory();
 }
 
-function updateInventory() {
-  // Get existing item elements
-  const existingItemElements = document.querySelectorAll('.player-inventory-container .item');
+function updateInventory(playerInventory = []) {
+    // Get existing item elements as a NodeList
+    const existingItemElements = document.querySelectorAll('.player-inventory-container .item');
+  
+    // Convert the NodeList to an array
+    const existingItemElementsArray = Array.from(existingItemElements);
+  
+    // Now you can use `find` on existingItemElementsArray
+    playerInventory.forEach(item => {
+      const existingItemElement = existingItemElementsArray.find(el => el.dataset.itemName === item.name);
+  
+      if (existingItemElement) {
+        // Update existing item element
+        updateItemElement(existingItemElement, item); // Assuming this function updates the item quantity
+      } else {
+        // Create new item element
+        const newItemElement = createNewItemElement(item);
+        inventoryList.appendChild(newItemElement);
+      }
+    });
+  
+    // Remove extra item elements that are no longer in inventory
+    existingItemElements.forEach(itemElement => {
+      if (!playerInventory.find(item => item.name === itemElement.dataset.itemName)) {
+        itemElement.remove();
+      }
+    });
+  }
 
-  // Update existing items or create new ones
-  playerInventory.forEach(item => {
-    const existingItemElement = existingItemElements.find(el => el.dataset.itemName === item.name);
+function updateItemElement(itemElement, item) {
+  // Assuming the itemElement structure includes a span with class 'item-quantity'
+  const quantityElement = itemElement.querySelector('.item-quantity');
 
-    if (existingItemElement) {
-      // Update existing item element
-      updateItemElement(existingItemElement, item); // Assuming this function updates the item quantity
-    } else {
-      // Create new item element
-      const newItemElement = createNewItemElement(item);
-      inventoryList.appendChild(newItemElement);
-    }
-  });
-
-  // Remove extra item elements that are no longer in inventory
-  existingItemElements.forEach(itemElement => {
-    if (!playerInventory.find(item => item.name === itemElement.dataset.itemName)) {
-      itemElement.remove();
-    }
-  });
+  if (quantityElement) {
+    // Update the quantity text
+    quantityElement.textContent = ` x${item.quantity || 1}`;
+  }
+  // Add any other updating logic as needed
 }
 
 function updateItemElement(itemElement, item) {
@@ -653,6 +664,7 @@ function updateItemElement(itemElement, item) {
   }
   // Add any other updating logic as needed
 }
+
 // New function to calculate experience gained based on defeated monster's level
 function calculateExperienceGain(monsterLevel) {
     const baseExperience = 20; // You can adjust this value based on your game's balance
