@@ -214,47 +214,53 @@ window.onload = function() {
         // Choose a random item
         const item = items[Math.floor(Math.random() * items.length)];
     
-        // Create a new div for the item
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'inventory-item';
-        itemDiv.title = item.name;
-        itemDiv.style.backgroundColor = 'white'; // Or any other styling you want
-        itemDiv.style.width = '20px';
-        itemDiv.style.height = '20px';
-        itemDiv.style.position = 'absolute';
-        itemDiv.style.left = Math.random() * (coinContainer.offsetWidth - 20) + 'px';
-        itemDiv.style.top = Math.random() * (coinContainer.offsetHeight - 20) + 'px';
+        // Check if the item should drop
+        if (Math.random() < item.dropChance) {
+            // Create a new div for the item
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'inventory-item';
+            itemDiv.title = item.name;
+            itemDiv.style.backgroundColor = 'white'; // Or any other styling you want
+            itemDiv.style.width = '20px';
+            itemDiv.style.height = '20px';
+            itemDiv.style.position = 'absolute';
+            itemDiv.style.left = Math.random() * (coinContainer.offsetWidth - 20) + 'px';
+            itemDiv.style.top = Math.random() * (coinContainer.offsetHeight - 20) + 'px';
     
-        // Add an event listener to the item
-        itemDiv.addEventListener('mouseover', () => {
-            // Check if the item is already in the inventory
-            if (inventory[item.name]) {
-                // If it is, increment the count
-                inventory[item.name]++;
+            // Add an event listener to the item
+            itemDiv.addEventListener('mouseover', () => {
+                // Check if the item is already in the inventory
+                if (inventory[item.name]) {
+                    // If it is, increment the count
+                    inventory[item.name]++;
+                } else {
+                    // If it's not, add a new item to the inventory
+                    inventory[item.name] = 1;
+                }
+    
                 // Find the item in the inventory
                 const inventoryItem = document.querySelector(`#player-inventory .inventory-item[title^="${item.name}"]`);
                 // Check if the item was found
                 if (inventoryItem) {
                     // Update the item's title to include the count
                     inventoryItem.title = `${item.name} x${inventory[item.name]}`;
+                } else {
+                    // If the item wasn't found, create a new inventory item
+                    const inventoryItem = itemDiv.cloneNode();
+                    inventoryItem.style.position = 'static';
+                    inventoryItem.style.width = '60px'; // Make the item bigger
+                    inventoryItem.style.height = '60px'; // Make the item bigger
+                    inventoryItem.title = `${item.name} x${inventory[item.name]}`;
+                    document.getElementById('player-inventory').appendChild(inventoryItem);
                 }
-            } else {
-            // If it's not, add a new item to the inventory
-            const inventoryItem = itemDiv.cloneNode();
-            inventoryItem.style.position = 'static';
-            inventoryItem.style.width = '60px'; // Make the item bigger
-            inventoryItem.style.height = '60px'; // Make the item bigger
-            inventoryItem.title = `${item.name} x1`;
-            document.getElementById('player-inventory').appendChild(inventoryItem);
-            // Add the item to the inventory object
-            inventory[item.name] = 1;
-            }
-            // Remove the item from the game container
-            coinContainer.removeChild(itemDiv);
-        });
     
-        // Add the item to the game container
-        coinContainer.appendChild(itemDiv);
+                // Remove the item from the game container
+                coinContainer.removeChild(itemDiv);
+            });
+    
+            // Add the item to the game container
+            coinContainer.appendChild(itemDiv);
+        }
     }
 
     function purchaseMeteorStormUpgrade() {
@@ -302,6 +308,14 @@ window.onload = function() {
                 playerHealth += healAmount;
                 if (playerHealth > 100) playerHealth = 100; // Cap health at 100
                 updatePlayerHealth();
+            }
+            // Check if the item is a Mana Potion
+            else if (item.name === 'Mana Potion') { // Add this block
+                // Increase the player's mana by a random amount between 10 and 20
+                let manaAmount = Math.floor(Math.random() * 11) + 10;
+                playerMana += manaAmount;
+                if (playerMana > 100) playerMana = 100; // Cap mana at 100
+                updatePlayerMana();
             }
             // Add more cases here for other consumable items
         }
