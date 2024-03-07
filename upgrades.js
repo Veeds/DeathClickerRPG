@@ -78,3 +78,32 @@ export function meteorStormUpgrade(coins, mana, meteorStormButton, dealDamage, d
     }
     return { coins, mana };
 }
+
+export function healingSpellUpgrade(coins, health, mana, healingSpellButton, updateHealth, updateMana) {
+    const cost = 200;
+    const manaCost = 10;
+    if (coins >= cost) {
+        coins -= cost;
+        healingSpellButton.style.display = 'block'; // Show the button
+        healingSpellButton.disabled = false; // Enable the button
+        healingSpellButton.textContent = "Cast Healing Spell";
+        healingSpellButton.addEventListener('click', function() {
+            if (mana < manaCost) {
+                alert('Not enough mana to cast the spell!');
+                return;
+            }
+            mana -= manaCost; // Deduct mana
+            updateMana(mana); // Update mana display
+            let healingAmount = 20; // Define how much health the spell restores
+            health += healingAmount;
+            updateHealth(health); // Update health display
+            healingSpellButton.disabled = true; // Disable the button while the spell is on cooldown
+            setTimeout(function() {
+                healingSpellButton.disabled = false; // Enable the button after the cooldown period
+            }, 5000); // 5 seconds cooldown
+        });
+    } else {
+        alert('Not enough coins to purchase upgrade!');
+    }
+    return { coins, health, mana };
+}

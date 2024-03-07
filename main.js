@@ -1,4 +1,4 @@
-import { levelUp, upgradeDamage, autoCollectCoins, meteorStormUpgrade } from './upgrades.js';
+import { levelUp, upgradeDamage, autoCollectCoins, meteorStormUpgrade, healingSpellUpgrade } from './upgrades.js';
 import { checkAchievements, displayAchievements } from './achievements.js';
 import { monsters, bosses } from './monsters.js';
 
@@ -43,6 +43,31 @@ window.onload = function() {
     let playerMana = 100;
     var playerHealthElement = document.getElementById('player-health'); // New line
     var playerManaElement = document.getElementById('player-mana'); // New line
+    
+    document.getElementById('healing-spell-upgrade-button').addEventListener('click', function() {
+        let result = healingSpellUpgrade(coins, playerHealth, playerMana, document.getElementById('healing-spell-button'), updatePlayerHealth, updatePlayerMana);
+        coins = result.coins;
+        playerHealth = result.health;
+        playerMana = result.mana;
+        document.getElementById('coins').textContent = "Coins: " + coins;
+        document.getElementById('player-health').textContent = "Health: " + playerHealth;
+        document.getElementById('player-mana').textContent = "Mana: " + playerMana;
+    });
+
+    document.getElementById('healing-spell-button').addEventListener('click', function() {
+        if (playerMana >= 10) {
+            playerMana -= 10;
+            playerHealth += 20;
+            updatePlayerHealth();
+            updatePlayerMana();
+            this.disabled = true;
+            setTimeout(() => {
+                this.disabled = false;
+            }, 5000);
+        } else {
+            alert('Not enough mana to cast the spell!');
+        }
+    });
 
     function updatePlayerHealth() {
         playerHealthElement.textContent = "Health: " + playerHealth; // New function to update player health in the UI
@@ -202,6 +227,7 @@ window.onload = function() {
         }
     }
 
+
     // Call checkAchievements whenever the level, coins, damage dealt, or monsters killed changes
     monster.addEventListener('click', function(event) {
         score += damage;
@@ -324,4 +350,6 @@ window.onload = function() {
         updateCoins();
         updatePlayerMana();
     });
+
+
 };
