@@ -226,43 +226,56 @@ window.onload = function() {
             updateMonsterInfo();
         }
     }
-
+    function calculateDamage(baseDamage) {
+        // Generate a random number between 0.8 and 1.2
+        let randomFactor = Math.random() * (1.2 - 0.8) + 0.8;
+        // Multiply the base damage by the random factor
+        let damage = baseDamage * randomFactor;
+        // Round the damage to the nearest integer
+        damage = Math.round(damage);
+        return damage;
+    }
 
     // Call checkAchievements whenever the level, coins, damage dealt, or monsters killed changes
     monster.addEventListener('click', function(event) {
-        score += damage;
-        damageDealt += damage; // Update damageDealt
-        monsterHealth -= damage;
-
+        // Use the player's fixed damage
+        let finalDamage = damage;
+    
+        score += finalDamage;
+        damageDealt += finalDamage; // Update damageDealt
+        monsterHealth -= finalDamage;
+    
         // New code to deal damage to player
-        let damageToPlayer = monsterData.damage; // Use the monster's damage
-        playerHealth -= damageToPlayer;
-        if (playerHealth < 0) playerHealth = 0;// Prevent health from going below 0
-
+        let minDamage = monsterData.damage[0]; // Use the monster's minimum damage
+        let maxDamage = monsterData.damage[1]; // Use the monster's maximum damage
+        let finalDamageToPlayer = Math.floor(Math.random() * (maxDamage - minDamage + 1)) + minDamage; // Select a random damage within the range
+        playerHealth -= finalDamageToPlayer;
+        if (playerHealth < 0) playerHealth = 0; // Prevent health from going below 0
+    
         // Call a function to update the player's health in the UI
         updatePlayerHealth();
-
+    
         if (monsterHealth <= 0) {
             spawnMonster();
             monstersKilled++; // Increase the number of monsters killed
         } else {
             updateMonsterInfo();
         }
-
+    
         // Game Over condition
         if (playerHealth <= 0) {
             // End the game
             alert('Game Over');
             // Here you can add more code to handle the end of the game
         }
-
+    
         spawnCoin();
         updateScore();
         updateCoins();
         var rect = monster.getBoundingClientRect();
         var coin = spawnCoin();
         coinsOnScreen.push(coin);
-        displayDamage(damage, event.clientX - rect.left, event.clientY - rect.top);
+        displayDamage(finalDamage, event.clientX - rect.left, event.clientY - rect.top); // Display the final damage, not the base damage
         checkAchievements(level, coins, damageDealt, monstersKilled,);
         displayAchievements(); // Call checkAchievements
     });
