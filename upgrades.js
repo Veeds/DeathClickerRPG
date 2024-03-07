@@ -41,7 +41,7 @@ export function autoCollectCoins(coins, autoCollectCoinsButton,) {
 }
 
 export function meteorStormUpgrade(coins, mana, meteorStormButton, dealDamage, displayDamage, spawnCoin, updateScore, updateMana) {
-    const cost = 100;
+    const cost = 1500;
     const manaCost = 20;
     if (coins >= cost && mana >= manaCost) {
         coins -= cost;
