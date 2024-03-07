@@ -38,7 +38,14 @@ window.onload = function() {
     var menuButton = document.getElementById('menu-button');
     var cancelButton = document.getElementById('cancel-button');
     var menuModal = document.getElementById('menu-modal');
-    
+
+    let playerHealth = 100; // Starting player health
+    var playerHealthElement = document.getElementById('player-health'); // New line
+
+    function updatePlayerHealth() {
+        playerHealthElement.textContent = "Health: " + playerHealth; // New function to update player health in the UI
+    }
+
     function updateScore() {
         scoreElement.textContent = "Score: " + score;
     }
@@ -194,12 +201,29 @@ window.onload = function() {
         score += damage;
         damageDealt += damage; // Update damageDealt
         monsterHealth -= damage;
+
+        // New code to deal damage to player
+        let damageToPlayer = monsterData.damage; // Use the monster's damage
+        playerHealth -= damageToPlayer;
+        if (playerHealth < 0) playerHealth = 0;// Prevent health from going below 0
+
+        // Call a function to update the player's health in the UI
+        updatePlayerHealth();
+
         if (monsterHealth <= 0) {
             spawnMonster();
             monstersKilled++; // Increase the number of monsters killed
         } else {
             updateMonsterInfo();
         }
+
+        // Game Over condition
+        if (playerHealth <= 0) {
+            // End the game
+            alert('Game Over');
+            // Here you can add more code to handle the end of the game
+        }
+
         spawnCoin();
         updateScore();
         updateCoins();
@@ -287,7 +311,5 @@ window.onload = function() {
             updateScore(); // Update the score display
         });
         updateCoins();
-    });
-
-    loadGame();     
+    }); 
 };
