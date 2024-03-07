@@ -1,6 +1,7 @@
 import { levelUp, upgradeDamage, autoCollectCoins, meteorStormUpgrade, healingSpellUpgrade } from './upgrades.js';
 import { checkAchievements, displayAchievements } from './achievements.js';
 import { monsters, bosses } from './monsters.js';
+import { items } from './items.js';
 
 window.onload = function() {
     var score = 0;
@@ -41,6 +42,7 @@ window.onload = function() {
 
     let playerHealth = 100;
     let playerMana = 100;
+    let inventory = {}; 
     var playerHealthElement = document.getElementById('player-health'); // New line
     var playerManaElement = document.getElementById('player-mana'); // New line
     
@@ -187,7 +189,7 @@ window.onload = function() {
         coin.style.left = Math.random() * (coinContainer.offsetWidth - 20) + 'px'; // Update this line
         coin.style.top = Math.random() * (coinContainer.offsetHeight - 20) + 'px'; // Update this line
         coinContainer.appendChild(coin);
-
+    
         coin.addEventListener('mouseover', function() {
             coins += 10;
             updateCoins();
@@ -199,8 +201,60 @@ window.onload = function() {
             checkAchievements(level, coins, damageDealt, monstersKilled,);
             displayAchievements();
         });
-
+    
+        // 10% chance to drop an item
+        if (Math.random() < 0.8) {
+            dropItem();
+        }
+    
         return coin;
+    }
+
+    function dropItem() {
+        // Choose a random item
+        const item = items[Math.floor(Math.random() * items.length)];
+    
+        // Create a new div for the item
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'inventory-item';
+        itemDiv.title = item.name;
+        itemDiv.style.backgroundColor = 'white'; // Or any other styling you want
+        itemDiv.style.width = '20px';
+        itemDiv.style.height = '20px';
+        itemDiv.style.position = 'absolute';
+        itemDiv.style.left = Math.random() * (coinContainer.offsetWidth - 20) + 'px';
+        itemDiv.style.top = Math.random() * (coinContainer.offsetHeight - 20) + 'px';
+    
+        // Add an event listener to the item
+        itemDiv.addEventListener('mouseover', () => {
+            // Check if the item is already in the inventory
+            if (inventory[item.name]) {
+                // If it is, increment the count
+                inventory[item.name]++;
+                // Find the item in the inventory
+                const inventoryItem = document.querySelector(`#player-inventory .inventory-item[title^="${item.name}"]`);
+                // Check if the item was found
+                if (inventoryItem) {
+                    // Update the item's title to include the count
+                    inventoryItem.title = `${item.name} x${inventory[item.name]}`;
+                }
+            } else {
+            // If it's not, add a new item to the inventory
+            const inventoryItem = itemDiv.cloneNode();
+            inventoryItem.style.position = 'static';
+            inventoryItem.style.width = '60px'; // Make the item bigger
+            inventoryItem.style.height = '60px'; // Make the item bigger
+            inventoryItem.title = `${item.name} x1`;
+            document.getElementById('player-inventory').appendChild(inventoryItem);
+            // Add the item to the inventory object
+            inventory[item.name] = 1;
+            }
+            // Remove the item from the game container
+            coinContainer.removeChild(itemDiv);
+        });
+    
+        // Add the item to the game container
+        coinContainer.appendChild(itemDiv);
     }
 
     function purchaseMeteorStormUpgrade() {
@@ -234,6 +288,23 @@ window.onload = function() {
         // Round the damage to the nearest integer
         damage = Math.round(damage);
         return damage;
+    }
+
+    function useItem(itemName) {
+        // Get the item from the items array
+        let item = items.find(item => item.name === itemName);
+        // Check if the item is a consumable
+        if (item.type === 'Consumable') {
+            // Check if the item is a Healing Potion
+            if (item.name === 'Healing Potion') {
+                // Heal the player between 5 and 10 health
+                let healAmount = Math.floor(Math.random() * 6) + 5;
+                playerHealth += healAmount;
+                if (playerHealth > 100) playerHealth = 100; // Cap health at 100
+                updatePlayerHealth();
+            }
+            // Add more cases here for other consumable items
+        }
     }
 
     // Call checkAchievements whenever the level, coins, damage dealt, or monsters killed changes
@@ -341,6 +412,26 @@ window.onload = function() {
         menuModal.style.display = 'none';
     });
 
+    document.getElementById('player-inventory').addEventListener('click', function(event) {
+        // Check if the clicked element is an inventory item
+        if (event.target.classList.contains('inventory-item')) {
+            // Get the item name from the title attribute
+            let itemName = event.target.title.split(' x')[0];
+            // Use the item
+            useItem(itemName);
+            // Decrement the count in the inventory object
+            inventory[itemName]--;
+            // If the count is 0, remove the item from the inventory object and the UI
+            if (inventory[itemName] === 0) {
+                delete inventory[itemName];
+                event.target.parentNode.removeChild(event.target);
+            } else {
+                // Otherwise, update the item's title to include the new count
+                event.target.title = `${itemName} x${inventory[itemName]}`;
+            }
+        }
+    });
+
     meteorStormUpgradeButton.addEventListener('click', function() {
         var result = meteorStormUpgrade(coins, playerMana, meteorStormButton, function(damage) {
             monsterHealth -= damage;
@@ -363,6 +454,5 @@ window.onload = function() {
         updateCoins();
         updatePlayerMana();
     });
-
 
 };
