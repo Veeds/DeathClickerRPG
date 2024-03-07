@@ -40,14 +40,21 @@ export function autoCollectCoins(coins, autoCollectCoinsButton,) {
     return coins;
 }
 
-export function meteorStormUpgrade(coins, meteorStormButton, dealDamage, displayDamage, spawnCoin, updateScore,) {
+export function meteorStormUpgrade(coins, mana, meteorStormButton, dealDamage, displayDamage, spawnCoin, updateScore, updateMana) {
     const cost = 100;
-    if (coins >= cost) {
+    const manaCost = 20;
+    if (coins >= cost && mana >= manaCost) {
         coins -= cost;
         meteorStormButton.style.display = 'block'; // Show the button
         meteorStormButton.disabled = false; // Enable the button
         meteorStormButton.textContent = "Meteor Storm";
         meteorStormButton.addEventListener('click', function() {
+            if (mana < manaCost) {
+                alert('Not enough mana to cast the spell!');
+                return;
+            }
+            mana -= manaCost; // Deduct mana here, outside of setInterval
+            updateMana(mana); // Update mana here, outside of setInterval
             meteorStormButton.disabled = true; // Disable the button while the spell is active
             let spellDuration = 10;
             let cooldown = 3;
@@ -56,7 +63,7 @@ export function meteorStormUpgrade(coins, meteorStormButton, dealDamage, display
                 dealDamage(damage); // Deal damage using the callback function
                 displayDamage(damage);  // Display damage using the callback function
                 spawnCoin();
-                updateScore(damage);   // Spawns a coin.
+                updateScore(damage);
                 spellDuration--;
                 if (spellDuration <= 0) {
                     clearInterval(spellInterval); // Stop the spell after 10 seconds
@@ -67,7 +74,7 @@ export function meteorStormUpgrade(coins, meteorStormButton, dealDamage, display
             }, 1000);
         });
     } else {
-        alert('Not enough coins to purchase upgrade!');
+        alert('Not enough coins or mana to purchase upgrade!');
     }
-    return coins;
+    return { coins, mana };
 }

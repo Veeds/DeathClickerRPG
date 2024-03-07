@@ -39,11 +39,17 @@ window.onload = function() {
     var cancelButton = document.getElementById('cancel-button');
     var menuModal = document.getElementById('menu-modal');
 
-    let playerHealth = 100; // Starting player health
+    let playerHealth = 100;
+    let playerMana = 100;
     var playerHealthElement = document.getElementById('player-health'); // New line
+    var playerManaElement = document.getElementById('player-mana'); // New line
 
     function updatePlayerHealth() {
         playerHealthElement.textContent = "Health: " + playerHealth; // New function to update player health in the UI
+    }
+
+    function updatePlayerMana() {
+        playerManaElement.textContent = "Mana: " + playerMana; // New function to update player mana in the UI
     }
 
     function updateScore() {
@@ -297,7 +303,7 @@ window.onload = function() {
     });
 
     meteorStormUpgradeButton.addEventListener('click', function() {
-        coins = meteorStormUpgrade(coins, meteorStormButton, function(damage) {
+        var result = meteorStormUpgrade(coins, playerMana, meteorStormButton, function(damage) {
             monsterHealth -= damage;
             if (monsterHealth <= 0) {
                 spawnMonster();
@@ -309,7 +315,13 @@ window.onload = function() {
         }, function(damage) {
             score += damage; // Update the score
             updateScore(); // Update the score display
+        }, function(mana) {
+            playerMana = mana; // Update the playerMana variable
+            updatePlayerMana();
         });
+        coins = result.coins;
+        playerMana = result.mana;
         updateCoins();
-    }); 
+        updatePlayerMana();
+    });
 };
