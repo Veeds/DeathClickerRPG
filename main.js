@@ -2,6 +2,7 @@ import { levelUp, upgradeDamage, autoCollectCoins, meteorStormUpgrade, healingSp
 import { checkAchievements, displayAchievements } from './achievements.js';
 import { monsters, bosses } from './monsters.js';
 import { items } from './items.js';
+import { equipment } from './equipment.js';
 
 window.onload = function() {
     var score = 0;
@@ -211,8 +212,9 @@ window.onload = function() {
     }
 
     function dropItem() {
-        // Choose a random item
-        const item = items[Math.floor(Math.random() * items.length)];
+        // Choose a random item or equipment
+        const itemArray = Math.random() < 0.5 ? items : equipment;
+        const item = itemArray[Math.floor(Math.random() * itemArray.length)];
     
         // Check if the item should drop
         if (Math.random() < item.dropChance) {
@@ -220,7 +222,7 @@ window.onload = function() {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'inventory-item';
             itemDiv.title = item.name;
-            itemDiv.style.backgroundColor = 'white'; // Or any other styling you want
+            itemDiv.style.backgroundColor = 'white';
             itemDiv.style.width = '20px';
             itemDiv.style.height = '20px';
             itemDiv.style.position = 'absolute';
@@ -229,29 +231,31 @@ window.onload = function() {
     
             // Add an event listener to the item
             itemDiv.addEventListener('mouseover', () => {
-                // Check if the item is already in the inventory
-                if (inventory[item.name]) {
-                    // If it is, increment the count
-                    inventory[item.name]++;
+                if (itemArray === equipment) {
+                    // If it's equipment, add it to the player's equipment
+                    playerEquipment.push(item);
+                    // Apply the equipment's effect to the player's stats
+                    playerStats = item.effect(playerStats);
                 } else {
-                    // If it's not, add a new item to the inventory
-                    inventory[item.name] = 1;
-                }
+                    // If it's an item, add it to the inventory
+                    if (inventory[item.name]) {
+                        inventory[item.name]++;
+                    } else {
+                        inventory[item.name] = 1;
+                    }
     
-                // Find the item in the inventory
-                const inventoryItem = document.querySelector(`#player-inventory .inventory-item[title^="${item.name}"]`);
-                // Check if the item was found
-                if (inventoryItem) {
-                    // Update the item's title to include the count
-                    inventoryItem.title = `${item.name} x${inventory[item.name]}`;
-                } else {
-                    // If the item wasn't found, create a new inventory item
-                    const inventoryItem = itemDiv.cloneNode();
-                    inventoryItem.style.position = 'static';
-                    inventoryItem.style.width = '60px'; // Make the item bigger
-                    inventoryItem.style.height = '60px'; // Make the item bigger
-                    inventoryItem.title = `${item.name} x${inventory[item.name]}`;
-                    document.getElementById('player-inventory').appendChild(inventoryItem);
+                    // Find the item in the inventory
+                    const inventoryItem = document.querySelector(`#player-inventory .inventory-item[title^="${item.name}"]`);
+                    if (inventoryItem) {
+                        inventoryItem.title = `${item.name} x${inventory[item.name]}`;
+                    } else {
+                        const inventoryItem = itemDiv.cloneNode();
+                        inventoryItem.style.position = 'static';
+                        inventoryItem.style.width = '60px';
+                        inventoryItem.style.height = '60px';
+                        inventoryItem.title = `${item.name} x${inventory[item.name]}`;
+                        document.getElementById('player-inventory').appendChild(inventoryItem);
+                    }
                 }
     
                 // Remove the item from the game container
@@ -262,6 +266,7 @@ window.onload = function() {
             coinContainer.appendChild(itemDiv);
         }
     }
+
 
     function purchaseMeteorStormUpgrade() {
         var cost = 1500;
